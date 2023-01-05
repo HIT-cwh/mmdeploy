@@ -14,6 +14,10 @@ class ONNXOptimUtils():
         for init in onnx_model.graph.initializer:
             params[init.name] = numpy_helper.to_array(init)
         for node in onnx_model.graph.node:
+            # If two zero_points are identity, one is a reference to the other
+            # after optimized by onnx.
+            if node.op_type == 'Identity' and len(node.input) == 1 and node.input[0] in params:
+                params[node.output[0]] = copy.deepcopy(params[node.input[0]])
             if node.op_type == 'Constant':
                 for attr in node.attribute:
                     if attr.name == 'value':

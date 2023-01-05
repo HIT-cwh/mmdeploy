@@ -1,26 +1,35 @@
 _base_ = ['../_base_/base_openvino_dynamic-800x1344.py']
 
 # TODO save in mmrazor's checkpoint
-quantizer = dict(
-    type='mmrazor.OpenvinoQuantizer',
-    skipped_methods=[
-        'mmdet.models.dense_heads.base_dense_head'
-        '.BaseDenseHead.predict_by_feat',
-    ],
-    prepare_custom_config_dict=None,
-    convert_custom_config_dict=None,
-    qconfig=dict(
-        qtype='affine',
-        w_observer=dict(type='mmrazor.MSEObserver'),
-        a_observer=dict(type='mmrazor.EMAMSEObserver'),
-        w_fake_quant=dict(type='mmrazor.FakeQuantize'),
-        a_fake_quant=dict(type='mmrazor.FakeQuantize'),
-        w_qscheme=dict(
-            bit=8,
-            is_symmetry=True,
-            is_per_channel=True,
-            is_pot_scale=False,
-        ),
-        a_qscheme=dict(
-            bit=8, is_symmetry=False, is_per_channel=False,
-            is_pot_scale=False)))
+
+global_qconfig=dict(
+    w_observer=dict(type='mmrazor.PerChannelMinMaxObserver'),
+    a_observer=dict(type='mmrazor.MovingAverageMinMaxObserver'),
+    w_fake_quant=dict(type='mmrazor.FakeQuantize'),
+    a_fake_quant=dict(type='mmrazor.FakeQuantize'),
+    w_qscheme=dict(
+        qdtype='qint8',
+        bit=8,
+        is_symmetry=True,
+        is_symmetric_range=True),
+    a_qscheme=dict(
+        qdtype='quint8',
+        bit=8,
+        is_symmetry=True,
+        averaging_constant=0.1),
+)
+
+quantizer=dict(
+    _scope_='mmrazor',
+    type='mmrazor.OpenVINOQuantizer',
+    global_qconfig=global_qconfig,
+    tracer=dict(
+        type='mmrazor.CustomTracer',
+        skipped_methods=[
+            'mmdet.models.dense_heads.base_dense_head.BaseDenseHead.predict_by_feat',
+            'mmdet.models.dense_heads.anchor_head.AnchorHead.loss_by_feat',
+        ]
+    )
+)
+
+checkpoint='/mnt/cache/caoweihan.p/projects/mmrazor_quant2/debug/model_ptq_deploy.pth'
