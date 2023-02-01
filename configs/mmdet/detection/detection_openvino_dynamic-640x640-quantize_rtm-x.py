@@ -1,4 +1,4 @@
-_base_ = ['../_base_/base_openvino_dynamic-800x1344.py']
+_base_ = ['../_base_/base_openvino_dynamic-640x640.py']
 
 # TODO save in mmrazor's checkpoint
 
@@ -31,5 +31,5 @@ quantizer=dict(
         ]
     )
 )
-
-checkpoint=r"D:\projects\checkpoints\rtmdet_x_8xb32-300e_coco_20220715_230555-cc79b9ae.pth"#'/mnt/cache/caoweihan.p/projects/mmrazor_quant2/debug/model_ptq_deploy.pth'
+# checkpoint = r'G:\projects\research\checkpoint\model_ptq_deploy.pth'
+checkpoint="/mnt/cache/caoweihan.p/projects/mmrazor_quant2/debug/model_ptq_deploy.pth"#'/mnt/cache/caoweihan.p/projects/mmrazor_quant2/debug/model_ptq_deploy.pth'
