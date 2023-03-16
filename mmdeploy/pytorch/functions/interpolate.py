@@ -84,6 +84,7 @@ def interpolate__tensorrt(
     mode: str = 'bilinear',
     align_corners: Optional[bool] = None,
     recompute_scale_factor: Optional[bool] = None,
+    antialias: Optional[bool] = False
 ):
     """Register default symbolic function for `interpolate`."""
     ctx = FUNCTION_REWRITER.get_context()
