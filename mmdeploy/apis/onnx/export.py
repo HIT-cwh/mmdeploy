@@ -116,8 +116,7 @@ def export(model: torch.nn.Module,
             from mmrazor.registry import MODELS
             quantizer = MODELS.build(deploy_cfg.quantizer)
             patched_model = quantizer.prepare_for_mmdeploy(
-                patched_model,
-                checkpoint=deploy_cfg.checkpoint)
+                patched_model, checkpoint=deploy_cfg.checkpoint)
         # patch input_metas
         if input_metas is not None:
             assert isinstance(
@@ -140,33 +139,17 @@ def export(model: torch.nn.Module,
 
         if 'quantizer' in deploy_cfg:
 
-            from torch.onnx import CheckerError
-            symbolic_output_path = output_path.replace('.onnx',
-                                                       '_symbolic.onnx')
-            try:
-                torch.onnx.export(
-                    patched_model,
-                    args,
-                    symbolic_output_path,
-                    export_params=True,
-                    input_names=input_names,
-                    output_names=output_names,
-                    opset_version=opset_version,
-                    dynamic_axes=dynamic_axes,
-                    keep_initializers_as_inputs=keep_initializers_as_inputs,
-                    verbose=verbose)
-
-            except CheckerError:
-                pass
-
-            from mmdeploy.core import OpenVinoQuantizeExportor, TensorRTExplicitExporter
-            backend_mapping = {
-                'openvino': OpenVinoQuantizeExportor,
-                'tensorrt': TensorRTExplicitExporter
-            }
-            exporter_cls = backend_mapping[quantizer.backend]
-            exporter = exporter_cls(symbolic_output_path, output_path)
-            exporter.export()
+            quantizer.export_onnx(
+                patched_model,
+                args,
+                output_path,
+                export_params=True,
+                input_names=input_names,
+                output_names=output_names,
+                opset_version=opset_version,
+                dynamic_axes=dynamic_axes,
+                keep_initializers_as_inputs=keep_initializers_as_inputs,
+                verbose=verbose)
 
         else:
 
